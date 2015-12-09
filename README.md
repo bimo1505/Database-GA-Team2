@@ -10,3 +10,7 @@ Team 2 Responsibilities :
 #### Main Program Notes
 - For deleting and updating a table row, the row is chosen in the SQL query based on its primary key, as it is the least likely attribute to be changed. So when the user would like to update a table row, they should be prohibited from updating the primary key.
 - The primary key should be the first column on every table in order to make fetching it easier.
+
+#### GUI Notes
+- How to make it dyna-#@$%-mic so we won't have to make 16 conditions for 16 tables???
+- Review tree view (lel).
