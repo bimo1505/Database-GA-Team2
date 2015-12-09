@@ -5,9 +5,6 @@ from tkinter import *
 def doThis():
     print('do')
 
-def Exit():
-    print('exit')
-
 ##window
 root = Tk()
 
@@ -26,12 +23,23 @@ dropdown = Menu(root)
 root.config(menu=dropdown)
 
 subMenu = Menu(dropdown)
-dropdown.add_cascade(label = "File", menu = subMenu)
-subMenu.add_command(label="Table1", command = doThis)
-subMenu.add_command(label="Table2", command = doThis)
-subMenu.add_command(label="Table2", command = doThis)
-subMenu.add_separator()
-subMenu.add_command(label = "Exit", command = Exit)
+dropdown.add_cascade(label = "Table", menu = subMenu)
+subMenu.add_command(label="Analyst", command = doThis)
+subMenu.add_command(label="Application", command = doThis)
+subMenu.add_command(label="App Design Team", command = doThis)
+subMenu.add_command(label="Customer", command = doThis)
+subMenu.add_command(label="Delivery", command = doThis)
+subMenu.add_command(label="Driver", command = doThis)
+subMenu.add_command(label="Employee", command = doThis)
+subMenu.add_command(label="Feedback", command = doThis)
+subMenu.add_command(label="Food", command = doThis)
+subMenu.add_command(label="Restaurant", command = doThis)
+subMenu.add_command(label="Software Engineer", command = doThis)
+subMenu.add_command(label="Supervisor", command = doThis)
+subMenu.add_command(label="Taxi", command = doThis)
+subMenu.add_command(label="Transaction", command = doThis)
+subMenu.add_command(label="Vehicle", command = doThis)
+subMenu.add_command(label="Works On", command = doThis)
 
 editMenu = Menu(dropdown)
 dropdown.add_cascade(label="edit", menu = editMenu)
