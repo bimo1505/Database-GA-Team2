@@ -12,6 +12,7 @@ Team 2 Responsibilities :
 - The primary key should be the first column on every table in order to make fetching it easier.
 
 #### GUI Notes
+- Make a validation for when no tables have been chosen but the user still tries to click on a command button.
 - For **Create Entry**, the program provides text boxes for every column.
 - For **Update Entry**, the program provides text boxes for every column except the primary key. 
 - For **Delete Entry**, the program lists all entries from the primary key column. The primary key entry that gets chosen will have its corresponding row deleted.
