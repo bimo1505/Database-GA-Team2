@@ -12,5 +12,6 @@ Team 2 Responsibilities :
 - The primary key should be the first column on every table in order to make fetching it easier.
 
 #### GUI Notes
-- How to make it dyna-#@$%-mic so we won't have to make 16 conditions for 16 tables???
-- Review tree view (lel).
+- For **Create Entry**, the program provides text boxes for every column.
+- For **Update Entry**, the program provides text boxes for every column except the primary key. 
+- For **Delete Entry**, the program lists all entries from the primary key column. The primary key entry that gets chosen will have its corresponding row deleted.
