@@ -167,49 +167,62 @@ editButton = Button(app, text = "Update Entry")
 
 """ ------------------------DELETE WINDOW------------------------ """
 
-def delete():
-    cursor.execute("""DELETE FROM {}
-                   WHERE CustomerName='Alfreds Futterkiste' AND ContactName='Maria Anders';""".format(dest()))
+class Delete(object):
+    def __init__(self):
+        self.root5 = Tk()
+        self.dest = dest
+        self.pKey = None
+        self.options = []
+        self.chosen = None
+        self._doItBish()
+        self.root5.mainloop()
 
-def bag():
-    # retrieve the table's name of primary key column
-    cursor.execute("""SELECT a.attname
-                   FROM   pg_index i
-                   JOIN   pg_attribute a ON a.attrelid = i.indrelid
-                                         AND a.attnum = ANY(i.indkey)
-                   WHERE  i.indrelid = '{}'::regclass
-                   AND    i.indisprimary;""".format(dest))
-    pkey = cursor.fetchone()[0]
+    def _doItBish(self):
+        self.pKey = self.get_pKey()
+        self.options = self.get_options()
 
-    # retrieve all values from the table's primary key column
-    cursor.execute("""SELECT {}
-                   FROM   {};""".format(pkey, dest))
+        self.root5.title("Delete Entry")
+        self.root5.geometry("180x80")
 
-    OPTIONS = []
-    fetched = cursor.fetchall()
-    for i in range(len(fetched)):
-        OPTIONS.append(fetched[i][0])
+        lDel = Label(self.root5, text = "Choose a Row to Delete")
+        self.chosen = StringVar(self.root5)
+        self.chosen.set(self.options[0]) # default value
+        w = OptionMenu(self.root5, self.chosen, *self.options)
+        x = Button(self.root5, text = "Delete", command = self.yukhapus)
+        
+        lDel.pack(side=TOP, fill=BOTH)
+        w.pack(side=TOP, fill=BOTH)
+        x.pack(side=TOP, fill=BOTH)
 
-    root5 = Tk()
-    root5.title("Delete Entry")
-    root5.geometry("300x100")
+    def yukhapus(self):
+        cursor.execute("""DELETE FROM {}
+                          WHERE {}='{}';"""\
+                       .format(self.dest, self.pKey, self.chosen.get()))
+        conn.commit()
 
-    lDel = Label(root5, text = "Choose a Row to Delete")
-    variable = StringVar(root5)
-    variable.set(OPTIONS[0]) # default value
+    def get_pKey(self):
+        # retrieve the table's name of primary key column
+        cursor.execute("""SELECT a.attname
+                          FROM   pg_index i
+                          JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                                                AND a.attnum = ANY(i.indkey)
+                          WHERE  i.indrelid = '{}'::regclass
+                          AND    i.indisprimary;""".format(self.dest))
+        return cursor.fetchone()[0]
 
-    w = OptionMenu(root5, variable, *OPTIONS)
-    deleteBtn = Button(root5, text = "Delete")
-    
-    lDel.pack(side=TOP, fill=BOTH)
-    w.pack(side=TOP, fill=BOTH)
-    deleteBtn.pack(side=TOP, fill=BOTH)
-
-    mainloop()
+    def get_options(self):
+        # retrieve all values from the table's primary key column
+        opt = []
+        cursor.execute("""SELECT {}
+                          FROM   {};""".format(self.pKey, self.dest))
+        fetched = cursor.fetchall()
+        for i in range(len(fetched)):
+            opt.append(fetched[i][0])
+        return opt
 
 """ ---------------------END OF DELETE WINDOW-------------------- """
 
-deleteButton = Button(app, text = "Delete Entry", command = bag)
+deleteButton = Button(app, text = "Delete Entry", command = Delete)
 
 l1.pack(side=TOP, fill=BOTH)
 datapresent.pack(side=TOP, fill=BOTH)
