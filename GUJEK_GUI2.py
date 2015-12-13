@@ -15,7 +15,7 @@ cursor = conn.cursor()
 # root window
 root = Tk()
 root.title("Gujek Database")
-root.geometry("300x400") # width x length
+root.resizable(0, 0)
 app = Frame(root)
 
 """Dropdown Menu"""
@@ -270,7 +270,7 @@ class Update(object):
             else:
                 continue
         u = Button(self.root4, text = "Update", command = self.yukganti)
-        u.grid(row=len(self.allCol)+2, columnspan=2, sticky=EW)
+        u.grid(row=len(self.allCol)+3, columnspan=2, sticky=EW)
 
     def yukganti(self):
         values = {k: str(adapt(v.get())) for k, v in self.entries.items()}
