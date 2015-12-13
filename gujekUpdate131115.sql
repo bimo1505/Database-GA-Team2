@@ -329,9 +329,9 @@ COPY employee (id, supervisor_id, name, birth_date, gender, address, phone) FROM
 1406600004	1406600002	Favian 	1996-02-10	M	Jl. Lebak lestari timur	0832477234932
 1406600005	1406600001	Meta	1996-04-15	W	Jl. Bintaro sektor 1	081392728291
 1406600006	1406600002	Ricky 	1996-10-11	M	Jl. Kira utara	08139182972
-1406600001	1406600003	Agazsi N. Bahasoean	1995-07-07	M	Jl. Brawijaya 8 no 12	08139172917
 1406600002	1406600003	Bimo Prabowo	1995-02-03	M	Jl. Karang asem tengah	082393739283
 null      	\N	\N	\N	\N	\N	\N
+1406600001	NULL      	Agazsi N. Bahasoean	1995-07-07	M	Jl. Brawijaya 8 no 12	08139172917
 \.
 
 
@@ -587,14 +587,6 @@ ALTER TABLE ONLY delivery
 
 ALTER TABLE ONLY driver
     ADD CONSTRAINT driver_id_fkey FOREIGN KEY (id) REFERENCES employee(id);
-
-
---
--- Name: employee_supervisor_id_fkey; Type: FK CONSTRAINT; Schema: gujek; Owner: postgres
---
-
-ALTER TABLE ONLY employee
-    ADD CONSTRAINT employee_supervisor_id_fkey FOREIGN KEY (supervisor_id) REFERENCES supervisor(id);
 
 
 --
