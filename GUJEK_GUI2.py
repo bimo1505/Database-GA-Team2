@@ -1,10 +1,14 @@
 import psycopg2
+from psycopg2.extensions import adapt
+
 from tkinter import ttk
 from tkinter import *
+
+from tkinter.messagebox import showerror
 import tkinter.font as tkFont
 
 # initialize connection to Gujek Database
-conn = psycopg2.connect("dbname=ASG_DB user=postgres")
+conn = psycopg2.connect("dbname=asg_db user=postgres")
 cursor = conn.cursor()
 
 """ -------------------------MAIN WINDOW------------------------- """
@@ -72,97 +76,148 @@ l2 = Label(app, text = "Choose an Operation")
 
 """ -------------------------SHOW WINDOW------------------------- """
 
-tree_columns = []
-tree_data = []
-
 class Treeview(object):
     def __init__(self):
+        self.root2 = Tk()
+        self.root2.title("Show Table")
         self.tree = None
+        self.dest = dest
+        self.tree_columns = self.get_column()
+        self.tree_data = self.get_data()
         self._setup_widgets()
         self._build_tree()
+        self.root2.mainloop()
 
     def _setup_widgets(self):
-        self.Child_Window()
-        msg = ttk.Label(wraplength="4i", justify="left", anchor="n",
+        msg = ttk.Label(self.root2, wraplength="4i", justify="left", anchor="n",
             padding=(10, 2, 10, 6),
-            text=("GUJEK Restaurant Table"))
+            text=("{}".format(self.dest)))
         msg.pack(fill='x')
 
-        container = ttk.Frame()
+        container = ttk.Frame(self.root2)
         container.pack(fill='both', expand=True)
 
         # scrollbars for the treeview table
-        self.tree = ttk.Treeview(columns=tree_columns, show="headings")
-        vsb = ttk.Scrollbar(orient="vertical", command=self.tree.yview)
-        hsb = ttk.Scrollbar(orient="horizontal", command=self.tree.xview)
+        self.tree = ttk.Treeview(container, columns=self.tree_columns, show="headings")
+        vsb = ttk.Scrollbar(container, orient="vertical", command=self.tree.yview)
+        hsb = ttk.Scrollbar(container, orient="horizontal", command=self.tree.xview)
         self.tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
-        self.tree.grid(column=0, row=0, sticky='nsew', in_=container)
-        vsb.grid(column=1, row=0, sticky='ns', in_=container)
-        hsb.grid(column=0, row=1, sticky='ew', in_=container)
+        self.tree.grid(column=0, row=0, sticky='nsew')
+        vsb.grid(column=1, row=0, sticky='ns')
+        hsb.grid(column=0, row=1, sticky='ew')
 
         container.grid_columnconfigure(0, weight=1)
         container.grid_rowconfigure(0, weight=1)
 
     def _build_tree(self):
-        for col in tree_columns:
+        for col in self.tree_columns:
             self.tree.heading(col, text=col.title(),
-                command=lambda c=col: sortby(self.tree, c, 0))
+                command=lambda c=col: self.sortby(c, 0))
             # XXX tkFont.Font().measure expected args are incorrect according
             #     to the Tk docs
             self.tree.column(col, width=tkFont.Font().measure(col.title()))
 
-        for item in tree_data:
+        for item in self.tree_data:
             self.tree.insert('', 'end', values=item)
 
             # adjust columns lenghts if necessary
             for indx, val in enumerate(item):
                 ilen = tkFont.Font().measure(val)
-                if self.tree.column(tree_columns[indx], width=None) < ilen:
-                    self.tree.column(tree_columns[indx], width=ilen)
+                if self.tree.column(self.tree_columns[indx], width=None) < ilen:
+                    self.tree.column(self.tree_columns[indx], width=ilen)
 
-    def sortby(tree, col, descending):
+    def sortby(self, col, descending):
         """Sort tree contents when a column is clicked on."""
         # grab values to sort
-        data = [(tree.set(child, col), child) for child in tree.get_children('')]
+        data = [(self.tree.set(child, col), child) for child in self.tree.get_children('')]
 
         # reorder data
         data.sort(reverse=descending)
         for indx, item in enumerate(data):
-            tree.move(item[1], '', indx)
+            self.tree.move(item[1], '', indx)
 
         # switch the heading so that it will sort in the opposite direction
-        tree.heading(col,
-                     command=lambda col=col: sortby(tree, col, int(not descending)))
-                    
-    def Child_Window(self):
-        win2 = Toplevel()
-        treeScroll = ttk.Scrollbar(win2)
-        treeScroll.pack(side=RIGHT, fill=Y)
-        tree = ttk.Treeview(win2,columns=tree_columns, show="headings")
-        tree.pack(side=LEFT, fill=BOTH)
-                    
-def fartbag():
-    global tree_columns, tree_data
-    cursor.execute("""SELECT attname
-                   FROM   pg_attribute
-                   WHERE  attrelid = '{}'::regclass
-                   AND    attnum > 0
-                   AND    NOT attisdropped
-                   ORDER  BY attnum;""".format(dest))
-    fetched = cursor.fetchall()
-    for i in range(len(fetched)):
-        tree_columns.append(fetched[i][0])
+        self.tree.heading(col,
+                     command=lambda col=col: self.sortby(col, int(not descending)))
 
-    cursor.execute("""SELECT * FROM {}""".format(dest))
-    for entry in cursor.fetchall():
-        tree_data.append(entry)
+    def get_column(self):
+        # retrieve column names in the table
+        fetch = []
+        cursor.execute("""SELECT attname
+                          FROM   pg_attribute
+                          WHERE  attrelid = '{}'::regclass
+                          AND    attnum > 0
+                          AND    NOT attisdropped
+                          ORDER  BY attnum;""".format(self.dest))
+        fetched = cursor.fetchall()
+        for i in range(len(fetched)):
+            fetch.append(fetched[i][0])
+        return fetch
 
-    treeview = Treeview()
+    def get_data(self):
+        # retrieve all rows in the table
+        retch = []
+        cursor.execute("""SELECT * FROM {}""".format(self.dest))
+        for entry in cursor.fetchall():
+            retch.append(entry)
+        return retch
 
 """ ----------------------END OF SHOW WINDOW--------------------- """
 
-showButton = Button(app, text = "Show Table", command = fartbag)
-createButton = Button(app, text = "Create Entry")
+showButton = Button(app, text = "Show Table", command = Treeview)
+
+""" ------------------------CREATE WINDOW------------------------ """
+
+class Create(object):
+    def __init__(self):
+        self.root3 = Tk()
+        self.root3.resizable(0,0)
+        self.root3.title("Create Entry")
+        self.dest = dest
+        self.columns = []
+        self.labels = dict()
+        self._cWindow()
+        self.root3.mainloop()
+
+    def _cWindow(self):
+        self.columns = self.get_columns()
+
+        # generate entry form
+        for i in range(len(self.columns)):
+            Label(self.root3,
+                  text="{}".format(self.columns[i])).grid(row=i, sticky=W)
+            self.labels[self.columns[i]] = Entry(self.root3)
+            self.labels[self.columns[i]].grid(row=i, column=1)
+
+        c = Button(self.root3, text = "Create", command = self.yukbikin)
+        c.grid(columnspan=2, sticky=EW)
+
+    def yukbikin(self):
+        values = {k: str(adapt(v.get())) for k, v in self.labels.items()}
+        final = ""
+        for column in self.columns:
+            final += values.get(column) + ","
+        cursor.execute("""INSERT INTO {}
+                          VALUES ({});""".format(self.dest, final[:-1]))
+        conn.commit()
+
+    def get_columns(self):
+        # retrieve all columns from the table
+        col = []
+        cursor.execute("""SELECT attname
+                          FROM   pg_attribute
+                          WHERE  attrelid = '{}'::regclass
+                          AND    attnum > 0
+                          AND    NOT attisdropped
+                          ORDER  BY attnum;""".format(self.dest))
+        fetched = cursor.fetchall()
+        for i in range(len(fetched)):
+            col.append(fetched[i][0])
+        return col
+    
+""" ---------------------END OF CREATE WINDOW-------------------- """
+    
+createButton = Button(app, text = "Create Entry", command = Create)
 editButton = Button(app, text = "Update Entry")
 
 """ ------------------------DELETE WINDOW------------------------ """
@@ -170,51 +225,56 @@ editButton = Button(app, text = "Update Entry")
 class Delete(object):
     def __init__(self):
         self.root5 = Tk()
-        self.dest = dest
-        self.pKey = None
-        self.options = []
-        self.chosen = None
-        self._doItBish()
-        self.root5.mainloop()
-
-    def _doItBish(self):
-        self.pKey = self.get_pKey()
-        self.options = self.get_options()
-
         self.root5.title("Delete Entry")
         self.root5.geometry("180x80")
+        self.dest = dest
+        self.first = None
+        self.options = []
+        self.chosen = None
+        self._dWindow()
+        self.root5.mainloop()
+
+    def _dWindow(self):
+        self.first = self.get_first()
+        self.options = self.get_options()
 
         lDel = Label(self.root5, text = "Choose a Row to Delete")
-        self.chosen = StringVar(self.root5)
-        self.chosen.set(self.options[0]) # default value
+        try:
+            self.chosen = StringVar(self.root5)
+            self.chosen.set(self.options[0]) # default value
+        except IndexError:
+            self.root5.destroy()
+            showerror("Index Error", "Table {} is empty".format(self.dest))
+            raise Exception("Table {} is empty".format(self.dest))
         w = OptionMenu(self.root5, self.chosen, *self.options)
-        x = Button(self.root5, text = "Delete", command = self.yukhapus)
+        d = Button(self.root5, text = "Delete", command = self.yukhapus)
         
         lDel.pack(side=TOP, fill=BOTH)
         w.pack(side=TOP, fill=BOTH)
-        x.pack(side=TOP, fill=BOTH)
+        d.pack(side=TOP, fill=BOTH)
 
     def yukhapus(self):
         cursor.execute("""DELETE FROM {}
-                          WHERE {}='{}';"""\
-                       .format(self.dest, self.pKey, self.chosen.get()))
+                          WHERE {}={};"""\
+                       .format(self.dest, self.first,
+                               str(adapt(self.chosen.get()))))
         conn.commit()
 
-    def get_pKey(self):
-        # retrieve the table's name of primary key column
-        cursor.execute("""SELECT a.attname
-                          FROM   pg_index i
-                          JOIN   pg_attribute a ON a.attrelid = i.indrelid
-                                                AND a.attnum = ANY(i.indkey)
-                          WHERE  i.indrelid = '{}'::regclass
-                          AND    i.indisprimary;""".format(self.dest))
+    def get_first(self):
+        # retrieve the name of the table's first column
+        cursor.execute("""SELECT attname
+                          FROM   pg_attribute
+                          WHERE  attrelid = '{}'::regclass
+                          AND    attnum > 0
+                          AND    NOT attisdropped
+                          ORDER  BY attnum;""".format(self.dest))
         return cursor.fetchone()[0]
 
     def get_options(self):
         # retrieve all values from the table's primary key column
         opt = []
         cursor.execute("""SELECT {}
-                          FROM   {};""".format(self.pKey, self.dest))
+                          FROM   {};""".format(self.first, self.dest))
         fetched = cursor.fetchall()
         for i in range(len(fetched)):
             opt.append(fetched[i][0])
