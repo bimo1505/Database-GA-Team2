@@ -8,7 +8,7 @@ from tkinter.messagebox import showerror
 import tkinter.font as tkFont
 
 # initialize connection to Gujek Database
-conn = psycopg2.connect("dbname=ASG_DB user=postgres")
+conn = psycopg2.connect("dbname=asg_db user=postgres")
 cursor = conn.cursor()
 
 """ -------------------------MAIN WINDOW------------------------- """
